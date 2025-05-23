@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from config import get_jwt_auth_manager, get_settings, BaseAppSettings, get_accounts_email_notificator
+from config import get_jwt_auth_manager, get_settings, BaseAppSettings, get_accounts_email_notificator, settings
 from database import (
     get_db,
     UserModel,
@@ -124,8 +124,9 @@ async def register_user(
 
         await db.commit()
         await db.refresh(new_user)
-        login_link = (f"http://127.0.0.1/accounts/activate/"
-                      f"?token={activation_token.token}")
+        login_link = (
+            f"{settings.FRONTEND_BASE_URL}{settings.ACTIVATION_PATH}?token={activation_token.token}"
+        )
         background_tasks.add_task(
             email_sender.send_activation_email,
             email=new_user.email,
@@ -233,7 +234,7 @@ async def activate_account(
     user.is_active = True
     await db.delete(token_record)
     await db.commit()
-    login_link = "http://127.0.0.1/accounts/login/"
+    login_link = f"{settings.FRONTEND_BASE_URL}accounts/login/"
 
     background_tasks.add_task(
         email_sender.send_activation_complete_email,
@@ -290,7 +291,7 @@ async def request_password_reset_token(
     db.add(reset_token)
     await db.commit()
 
-    login_link = "http://127.0.0.1/accounts/password-reset/request/"
+    login_link = f"{settings.FRONTEND_BASE_URL}accounts/password-reset/request/?token={reset_token.token}"
 
     background_tasks.add_task(
         email_sender.send_password_reset_email,
@@ -409,7 +410,7 @@ async def reset_password(
         await db.run_sync(lambda s: s.delete(token_record))
         await db.commit()
 
-        login_link = "http://127.0.0.1/accounts/login/"
+        login_link = f"{settings.FRONTEND_BASE_URL}accounts/login/"
         background_tasks.add_task(
             email_sender.send_password_reset_complete_email,
             email=str(data.email),
