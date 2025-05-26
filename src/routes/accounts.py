@@ -7,7 +7,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from config import get_jwt_auth_manager, get_settings, BaseAppSettings, get_accounts_email_notificator, settings
+from config import get_jwt_auth_manager, get_settings, BaseAppSettings, get_accounts_email_notificator
+from config.settings import settings
 from database import (
     get_db,
     UserModel,
@@ -124,9 +125,9 @@ async def register_user(
 
         await db.commit()
         await db.refresh(new_user)
-        login_link = (
-            f"{settings.FRONTEND_BASE_URL}{settings.ACTIVATION_PATH}?token={activation_token.token}"
-        )
+        login_link = (f"{settings.FRONTEND_BASE_URL}"
+                      f"{settings.ACTIVATION_PATH}"
+                      f"?token={activation_token.token}")
         background_tasks.add_task(
             email_sender.send_activation_email,
             email=new_user.email,
@@ -291,7 +292,7 @@ async def request_password_reset_token(
     db.add(reset_token)
     await db.commit()
 
-    login_link = f"{settings.FRONTEND_BASE_URL}accounts/password-reset/request/?token={reset_token.token}"
+    login_link = f"{settings.FRONTEND_BASE_URL}accounts/password-reset/request/"
 
     background_tasks.add_task(
         email_sender.send_password_reset_email,
