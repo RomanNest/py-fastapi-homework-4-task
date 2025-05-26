@@ -235,7 +235,7 @@ async def activate_account(
     user.is_active = True
     await db.delete(token_record)
     await db.commit()
-    login_link = f"{settings.FRONTEND_BASE_URL}accounts/login/"
+    login_link = f"{settings.FRONTEND_BASE_URL}/accounts/login/"
 
     background_tasks.add_task(
         email_sender.send_activation_complete_email,
@@ -292,7 +292,7 @@ async def request_password_reset_token(
     db.add(reset_token)
     await db.commit()
 
-    login_link = f"{settings.FRONTEND_BASE_URL}accounts/password-reset/request/"
+    login_link = f"{settings.FRONTEND_BASE_URL}/accounts/password-reset/request/"
 
     background_tasks.add_task(
         email_sender.send_password_reset_email,
@@ -411,7 +411,7 @@ async def reset_password(
         await db.run_sync(lambda s: s.delete(token_record))
         await db.commit()
 
-        login_link = f"{settings.FRONTEND_BASE_URL}accounts/login/"
+        login_link = f"{settings.FRONTEND_BASE_URL}/accounts/login/"
         background_tasks.add_task(
             email_sender.send_password_reset_complete_email,
             email=str(data.email),
